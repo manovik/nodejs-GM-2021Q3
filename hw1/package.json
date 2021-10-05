@@ -4,12 +4,16 @@
   "description": "Homework #1",
   "main": "index.js",
   "scripts": {
-    "task1": "nodemon src/task1.js"
+    "task1": "nodemon src/task1.js",
+    "task2": "nodemon src/task2.js -in src/csv/books.csv -out converted/books.txt"
   },
   "keywords": [],
   "author": "Maxim Novikov1",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^2.0.13"
+  },
+  "dependencies": {
+    "csvtojson": "^2.0.10"
   }
 }
