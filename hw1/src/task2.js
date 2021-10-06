@@ -7,25 +7,18 @@ const FLAGS = {
   OUT: '-out'
 }
 
-let inFlagIdx = null;
-let outFlagIdx = null;
-let inputIdx = null;
-let outputIdx = null;
+const findIndexes = (array, indexes) => {
+  indexes.inFlagIdx = array.findIndex((el) => el === FLAGS.IN);
+  indexes.outFlagIdx = array.findIndex((el) => el === FLAGS.OUT);
 
-const findIndexes = (array) => {
-  inFlagIdx = array.findIndex((el) => el === FLAGS.IN);
-  outFlagIdx = array.findIndex((el) => el === FLAGS.OUT);
-
-  inputIdx = inFlagIdx + 1;
-  outputIdx = outFlagIdx + 1;
+  indexes.inputIdx = indexes.inFlagIdx + 1;
+  indexes.outputIdx = indexes.outFlagIdx + 1;
 }
 
-const validatePassedParams = (array) => {
-  findIndexes(array);
-
+const validatePassedParams = (array, indexes) => {
   let isValid = false;
 
-  if (inFlagIdx <= 0 || outFlagIdx <= 0) {
+  if (indexes.inFlagIdx <= 0 || indexes.outFlagIdx <= 0) {
     console.error(`Some parameters are not passed. Check ${FLAGS.IN} or ${FLAGS.OUT} params.`);
     return false;
   }
@@ -43,22 +36,22 @@ const validatePassedParams = (array) => {
     }
   });
 
-  if (Math.max(inputIdx, outputIdx) >= array.length) {
+  if (Math.max(indexes.inputIdx, indexes.outputIdx) >= array.length) {
     console.error('Seems like one of parameters was not passed after the flag. Check -in or -out flags.');
     return false;
   }
 
-  if (array[inputIdx] === FLAGS.OUT) {
+  if (array[indexes.inputIdx] === FLAGS.OUT) {
     console.error(`Pass the filename after '${FLAGS.IN}' flag.`);
     return false;
   }
 
-  if (array[outputIdx] === FLAGS.IN) {
+  if (array[indexes.outputIdx] === FLAGS.IN) {
     console.error(`Pass the filename after '${FLAGS.OUT}' flag.`);
     return false;
   }
 
-  if (!/\.csv$/.test(array[inputIdx])) {
+  if (!/\.csv$/.test(array[indexes.inputIdx])) {
     console.error('Pass the ".csv" file for converting.');
     return false;
   }
@@ -69,11 +62,19 @@ const validatePassedParams = (array) => {
 const cutName = (name) => name.replace(/.+(?<=\/)/, '');
 
 const convertFile = (array) => {
-  const isValid = validatePassedParams(array);
+  const IDXs = {
+    inFlagIdx: null,
+    outFlagIdx: null,
+    inputIdx: null,
+    outputIdx: null
+  }
+
+  findIndexes(array, IDXs);
+  const isValid = validatePassedParams(array, IDXs);
 
   if (isValid) {
-    const inputFile = array[inputIdx];
-    const outputFile = array[outputIdx];
+    const inputFile = array[IDXs.inputIdx];
+    const outputFile = array[IDXs.outputIdx];
 
     const inputFileFileShortName = cutName(inputFile);
     const outputFileShortName = cutName(outputFile);
