@@ -4,8 +4,8 @@
   "description": "Homework #1",
   "main": "index.js",
   "scripts": {
-    "task1": "nodemon src/task1/task1.js",
-    "task2": "nodemon src/task2/task2.js -in src/task2/csv/books.csv -out converted/books.txt",
+    "task1": "nodemon src/task1",
+    "task2": "nodemon src/task2 -in src/task2/csv/books.csv -out converted/books.txt",
     "task3": "nodemon src/task3.js"
   },
   "keywords": [],
