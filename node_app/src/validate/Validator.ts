@@ -1,4 +1,4 @@
-import { NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { IncomingMessage } from 'http';
 import { ValidationErrorHandler } from '../errors';
 import { userDeleteSchema, userPostSchema, userPutSchema } from './schemas';
@@ -12,15 +12,15 @@ interface IValidator {
 }
 
 export default class Validator implements IValidator {
-  req: any;
+  req: Request | null = null;
 
-  res: any;
+  res: Response | null = null;
 
   getMethod = (req: IncomingMessage) => {
     return req?.method?.toLowerCase();
   };
 
-  validate = () => (req: IncomingMessage, res: any, next: NextFunction) => {
+  validate = () => (req: Request, res: Response, next: NextFunction) => {
     const method = this.getMethod(req);
 
     this.req = req;
@@ -49,7 +49,7 @@ export default class Validator implements IValidator {
   };
 
   delete = (next: NextFunction): void => {
-    const { error } = userDeleteSchema.validate(this.req?.pathParameter);
+    const { error } = userDeleteSchema.validate(this.req?.params);
 
     if (error) {
       const customError = new ValidationErrorHandler(error.message);

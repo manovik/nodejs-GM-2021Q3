@@ -20,7 +20,7 @@ router.get('/', (req, res): void => {
     const { loginSubstring, limit } = req.query;
 
     if (loginSubstring || limit) {
-      users = getAutoSuggestUsers(<string>loginSubstring, <string>limit);
+      users = getAutoSuggestUsers(<string>loginSubstring, +(<string>limit));
     } else {
       users = getUsers();
     }
