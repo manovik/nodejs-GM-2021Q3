@@ -52,20 +52,16 @@ export const getAllNotDeletedUsers = () => users.filter((u) => !u.isDeleted);
 
 export const getAutoSuggestUsers = (
   loginSubstring = '',
-  limit: string
+  limit: number
 ): User[] => {
   const users = getAllNotDeletedUsers();
   const start = 0;
   const end = users.length;
-  let result: User[];
-  const limitNum = limit ? parseInt(limit, 10) : end;
+  const limitNum = limit ? limit : end;
+  const substr = loginSubstring ? loginSubstring : '';
 
-  if (loginSubstring) {
-    result = users.filter((u) => {
-      return RegExp(loginSubstring, 'g').test(u.login);
-    });
-  } else {
-    return users.slice(start, limitNum);
-  }
-  return result.slice(start, limitNum);
+  return users
+    .filter((u) => RegExp(substr, 'g').test(u.login))
+    .sort((u1, u2) => u1.login.localeCompare(u2.login))
+    .slice(start, limitNum);
 };
