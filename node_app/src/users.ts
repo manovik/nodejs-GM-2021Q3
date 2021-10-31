@@ -42,10 +42,12 @@ export const findUserIndex = (id: string): number => {
   return users.findIndex((u) => u.id === id);
 };
 
-export const findUser = (id: string): User | Record<string, unknown> => {
-  const user: User | undefined = users.find((u) => u.id === id);
+export const isLoginExists = (login: string): boolean => {
+  return users.findIndex((u) => u.login === login) >= 0;
+};
 
-  return (!user?.isDeleted && user) || {};
+export const findUser = (id: string): User | undefined => {
+  return users.find((u) => u.id === id);
 };
 
 export const getAllNotDeletedUsers = () => users.filter((u) => !u.isDeleted);
