@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { IncomingMessage } from 'http';
 import { ValidationErrorHandler } from '../errors';
-import { userDeleteSchema, userPostSchema, userPutSchema } from './schemas';
+import { idSchema, userPostSchema, userPutSchema } from './schemas';
 
 interface IValidator {
   getMethod(req: IncomingMessage): string | undefined;
@@ -10,6 +10,8 @@ interface IValidator {
   delete(next: NextFunction): void;
   put(next: NextFunction): void;
 }
+
+type ValidatorMethods = 'get' | 'post' | 'delete' | 'put';
 
 export default class Validator implements IValidator {
   req: Request | null = null;
@@ -25,8 +27,9 @@ export default class Validator implements IValidator {
 
     this.req = req;
     this.res = res;
+
     if (method && method in this) {
-      this[method as 'get' | 'post' | 'delete' | 'put'](next); // TODO: need to refactor this
+      this[<ValidatorMethods>method](next);
       return;
     }
     next();
@@ -49,7 +52,8 @@ export default class Validator implements IValidator {
   };
 
   delete = (next: NextFunction): void => {
-    const { error } = userDeleteSchema.validate(this.req?.params);
+    const id = this.req?.path.replace('/', '');
+    const { error } = idSchema.validate(id);
 
     if (error) {
       const customError = new ValidationErrorHandler(error.message);

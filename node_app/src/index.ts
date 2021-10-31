@@ -7,7 +7,7 @@ import { router } from './router';
 dotenv.config();
 
 const app = express();
-const { PORT } = process.env;
+const PORT = Number(process.env?.PORT) || 3005;
 
 const validator = new Validator();
 
