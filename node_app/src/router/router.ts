@@ -3,6 +3,7 @@ import { User } from '../types';
 import { RESPONSE_STATUS } from '../constants';
 import {
   findUser,
+  isLoginExists,
   findUserIndex,
   getAllNotDeletedUsers as getUsers,
   getAutoSuggestUsers,
@@ -10,6 +11,7 @@ import {
 } from '../users';
 import { CustomError } from '../errors';
 import { makeShortId } from '../utils';
+import { v4 as createUUID } from 'uuid';
 
 const router = Router();
 
@@ -39,13 +41,14 @@ router.get('/:id', (req, res): void => {
 
   try {
     const user = findUser(id);
+    const userNotExist = user && !user.isDeleted ? false : true;
 
+    if (userNotExist) {
+      throw new CustomError(`Could not get user with id "${ makeShortId(id) }".`);
+    }
     res.status(RESPONSE_STATUS.OK).json(user);
   } catch (err: any) {
-    res
-      .status(RESPONSE_STATUS.BAD_REQUEST)
-      .json(`Could not get user with id "${ makeShortId(id) }".`);
-    throw new CustomError(`${ err?.message }`);
+    res.status(RESPONSE_STATUS.BAD_REQUEST).json(`${ err?.message }`);
   }
 });
 
@@ -64,11 +67,8 @@ router.delete('/:id', (req, res): void => {
     } else {
       throw new CustomError(`Could not find user with id "${ makeShortId(id) }"`);
     }
-  } catch (err: unknown) {
-    res.status(RESPONSE_STATUS.BAD_REQUEST).json(`User was not deleted.`);
-    throw new CustomError(
-      `Could not find user with id "${ makeShortId(id) }".\n${ err }`
-    );
+  } catch (err: any) {
+    res.status(RESPONSE_STATUS.BAD_REQUEST).json(err?.message);
   }
 });
 
@@ -99,16 +99,17 @@ router.put('/', (req, res): void => {
 router.post('/', async (req, res) => {
   try {
     const user: User = req.body;
-    const { id }: User = req.body;
+    const { login }: User = req.body;
 
-    if (findUserIndex(id) < 0) {
-      users.push(user);
-      res.sendStatus(RESPONSE_STATUS.CREATED);
-    } else {
+    if (isLoginExists(login)) {
       throw new CustomError(
-        `Could not create. User with id "${ makeShortId(id) }" already exists`
+        `Could not create. User with login ${ login } already exists.`
       );
     }
+
+    users.push({ ...user, id: createUUID(), isDeleted: false });
+
+    res.sendStatus(RESPONSE_STATUS.CREATED);
   } catch (err: any) {
     res.status(RESPONSE_STATUS.BAD_REQUEST).json(err?.message);
   }
