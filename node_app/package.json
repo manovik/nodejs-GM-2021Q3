@@ -4,6 +4,7 @@
   "description": "Node.js GMP",
   "main": "src/index.ts",
   "scripts": {
+    "start": "ts-node src/index.ts",
     "serve": "nodemon --config nodemon.json src/index.ts"
   },
   "keywords": [],
