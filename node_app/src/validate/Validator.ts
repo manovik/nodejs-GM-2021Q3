@@ -43,9 +43,9 @@ export default class Validator implements IValidator {
     const { error } = userPostSchema.validate(this.req?.body);
 
     if (error) {
-      const customError = new ValidationErrorHandler(error.message);
+      const validationError = new ValidationErrorHandler(error.message);
 
-      next(customError);
+      next(validationError.createMessage());
       return;
     }
     next();
@@ -56,21 +56,26 @@ export default class Validator implements IValidator {
     const { error } = idSchema.validate(id);
 
     if (error) {
-      const customError = new ValidationErrorHandler(error.message);
+      const validationError = new ValidationErrorHandler(error.message);
 
-      next(customError);
+      next(validationError.createMessage());
       return;
     }
     next();
   };
 
   put = (next: NextFunction): void => {
+    const id = this.req?.path.replace('/', '');
+    const { error: err } = idSchema.validate(id);
     const { error } = userPutSchema.validate(this.req?.body);
 
-    if (error) {
-      const customError = new ValidationErrorHandler(error.message);
+    if (error || err) {
+      const errors = [ error?.message, err?.message ];
+      const validationError = new ValidationErrorHandler(
+        errors.filter(Boolean).join('\n')
+      );
 
-      next(customError);
+      next(validationError.createMessage());
       return;
     }
     next();

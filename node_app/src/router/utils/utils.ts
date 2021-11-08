@@ -1,96 +1,98 @@
 import { Request, Response } from 'express';
 
-import { v4 as createUUID } from 'uuid';
-
-import { User } from '@app/types';
 import { RESPONSE_STATUS } from '@app/constants';
 import { userService } from '@app/services';
 import { CustomError } from '@app/errors';
 import { makeShortId } from '@app/utils';
+import { IUser, IUserOutput } from '@app/types';
+import { mapUserOutput } from '@app/utils';
 
 const {
   findUser,
-  isLoginExists,
-  findUserIndex,
-  getAllNotDeletedUsers: getUsers,
-  getAutoSuggestUsers,
-  users
+  findAllNotDeletedUsers,
+  updateUser: updateInDB,
+  createUser: createNewUser
 } = userService;
 
-export const getAllUsers = (req: Request, res: Response): void => {
-  let users: User[];
-
+export const getAllUsers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const { loginSubstring, limit } = req.query;
+    const { loginSubstring, limit = 10 } = req.query;
 
-    if (loginSubstring || limit) {
-      users = getAutoSuggestUsers(<string>loginSubstring, +(<string>limit));
-    } else {
-      users = getUsers();
-    }
+    const users = await findAllNotDeletedUsers(
+      parseInt(<string>limit),
+      <string>loginSubstring
+    );
 
-    res.status(RESPONSE_STATUS.OK).json(users);
+    const mappedUsers: IUserOutput[] | undefined = mapUserOutput(users);
+
+    res.status(RESPONSE_STATUS.OK).json(mappedUsers);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     res
       .status(RESPONSE_STATUS.BAD_REQUEST)
       .json(`Could not get list of users.`);
-    throw new CustomError(err);
+    throw new CustomError(err as string);
   }
 };
 
-export const getUserById = (req: Request, res: Response): void => {
+export const getUserById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { id } = req.params;
 
   try {
-    const user = findUser(id);
-    const userNotExist = user && !user.isDeleted ? false : true;
+    const user = await findUser(id);
 
-    if (userNotExist) {
-      throw new CustomError(`Could not get user with id "${ makeShortId(id) }".`);
-    }
     res.status(RESPONSE_STATUS.OK).json(user);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     res.status(RESPONSE_STATUS.BAD_REQUEST).json(`${ err?.message }`);
   }
 };
 
-export const deleteUserById = (req: Request, res: Response): void => {
+export const deleteUserById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { id } = req.params;
 
   try {
-    const idx: number = findUserIndex(id);
+    const [result] = await updateInDB(id, { isDeleted: true });
 
-    if (idx >= 0) {
-      users[idx].isDeleted = true;
-
+    if (result > 0) {
       res
         .status(RESPONSE_STATUS.DELETED)
         .json(`User with id ${ makeShortId(id) } was successfully deleted.`);
     } else {
       throw new CustomError(`Could not find user with id "${ makeShortId(id) }"`);
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     res.status(RESPONSE_STATUS.BAD_REQUEST).json(err?.message);
   }
 };
 
-export const updateUser = (req: Request, res: Response): void => {
-  const { id } = <User>req.body;
+export const updateUser = async (
+  req: Request<{ id: string }, null, IUser>,
+  res: Response
+): Promise<void> => {
+  const { id } = req.params;
 
   try {
-    const idx: number = findUserIndex(id);
+    const [result] = await updateInDB(id, { ...req.body });
 
-    if (idx >= 0) {
-      const oldUserInfo = users[idx];
-
-      users[idx] = { ...oldUserInfo, ...req.body };
-
+    if (result > 0) {
       res
         .status(RESPONSE_STATUS.UPDATED)
         .json(`User with id ${ makeShortId(id) } was successfully updated.`);
     } else {
       throw new CustomError(`Could not find user with id "${ makeShortId(id) }"`);
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     res
       .status(RESPONSE_STATUS.BAD_REQUEST)
@@ -98,20 +100,23 @@ export const updateUser = (req: Request, res: Response): void => {
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const user: User = req.body;
-    const { login }: User = req.body;
+    const user: IUser = req.body;
 
-    if (isLoginExists(login)) {
-      throw new CustomError(
-        `Could not create. User with login ${ login } already exists.`
+    const result = await createNewUser(user);
+
+    res
+      .status(RESPONSE_STATUS.CREATED)
+      .json(
+        `User ${ result.login } successfully created with id ${ makeShortId(
+          result.id
+        ) }`
       );
-    }
-
-    users.push({ ...user, id: createUUID(), isDeleted: false });
-
-    res.sendStatus(RESPONSE_STATUS.CREATED);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     res.status(RESPONSE_STATUS.BAD_REQUEST).json(err?.message);
   }

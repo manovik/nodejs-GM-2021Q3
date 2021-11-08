@@ -16,4 +16,9 @@ app.use(express.json());
 app.use(validator.validate());
 app.use('/', router);
 
-app.listen(PORT);
+try {
+  app.listen(PORT);
+  console.log('App is on ', PORT);
+} catch (err) {
+  console.log('App is not started...\n', err);
+}

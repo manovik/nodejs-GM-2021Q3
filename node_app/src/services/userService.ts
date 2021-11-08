@@ -1,69 +1,68 @@
-import { User } from '../types';
+import { Sequelize } from 'sequelize';
 
-export const users: User[] = [
-  {
-    id: '8c5d3b70-cf6c-4c2e-b691-edc12241a643',
-    login: 'veronik@',
-    password: 'pin3g',
-    age: 25,
-    isDeleted: false
-  },
-  {
-    id: 'caa04728-2041-4dd7-a875-08814486544b',
-    login: 'm@xim',
-    password: 'pi23ng',
-    age: 31,
-    isDeleted: false
-  },
-  {
-    id: '4f0cc1e1-398e-4228-a53c-bd1b798b7917',
-    login: '@n$heLik@',
-    password: 'pin45g',
-    age: 28,
-    isDeleted: false
-  },
-  {
-    id: '0d767cd5-a1df-47e9-aa9b-4f76ca7cfd1b',
-    login: 'IgAr',
-    password: 'pin66g',
-    age: 30,
-    isDeleted: false
-  },
-  {
-    id: '0e8658f9-a3c7-4237-b950-ce318fd1e292',
-    login: 'moneyman',
-    password: 'ping12',
-    age: 52,
-    isDeleted: false
+import { User } from '@app/data-access';
+import { CustomError } from '@app/errors';
+import { IUser } from '@app/types';
+
+export const updateUser = async (
+  id: string,
+  update: Partial<Omit<IUser, 'id'>>
+) => {
+  const result = await User.update(update, {
+    where: {
+      id,
+      isDeleted: false
+    }
+  });
+
+  return result;
+};
+
+export const findUser = async (id: string): Promise<IUser | null> => {
+  try {
+    const user: IUser | null = await User.findOne({
+      where: {
+        id,
+        isDeleted: false
+      }
+    });
+
+    return user;
+  } catch (err) {
+    throw new CustomError(`${ err }. Could not get user.`);
   }
-];
-
-export const findUserIndex = (id: string): number => {
-  return users.findIndex((u) => u.id === id);
 };
 
-export const isLoginExists = (login: string): boolean => {
-  return users.findIndex((u) => u.login === login) >= 0;
+export const findAllNotDeletedUsers = async (
+  limit = 10,
+  searchString = ''
+): Promise<IUser[]> => {
+  try {
+    const users: IUser[] = await User.findAll({
+      where: {
+        isDeleted: false,
+        login: Sequelize.where(
+          Sequelize.fn('LOWER', Sequelize.col('login')),
+          'LIKE',
+          '%' + searchString + '%'
+        )
+      },
+      limit
+    });
+
+    return users;
+  } catch (err) {
+    throw new CustomError(`${ err }. Could not get users.`);
+  }
 };
 
-export const findUser = (id: string): User | undefined => {
-  return users.find((u) => u.id === id);
-};
+export const createUser = async (userData: IUser) => {
+  try {
+    const result = await User.create(userData);
 
-export const getAllNotDeletedUsers = () => users.filter((u) => !u.isDeleted);
-
-export const getAutoSuggestUsers = (
-  loginSubstring = '',
-  limit: number
-): User[] => {
-  const users = getAllNotDeletedUsers();
-  const start = 0;
-  const end = users.length;
-  const limitNum = limit ? limit : end;
-  const substr = loginSubstring ? loginSubstring : '';
-
-  return users
-    .filter((u) => RegExp(substr, 'g').test(u.login))
-    .sort((u1, u2) => u1.login.localeCompare(u2.login))
-    .slice(start, limitNum);
+    console.log(result);
+    return result;
+  } catch (err) {
+    throw new CustomError(`${ err }. Could not create user.`);
+  }
 };

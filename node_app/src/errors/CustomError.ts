@@ -1,4 +1,4 @@
-import { RESPONSE_STATUS } from "../constants";
+import { RESPONSE_STATUS } from '@app/constants';
 
 export default class CustomError extends Error {
   statusCode: number;

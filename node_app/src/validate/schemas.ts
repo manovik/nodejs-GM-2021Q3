@@ -1,8 +1,5 @@
 import Joi from 'joi';
-const passwordPattern = new RegExp(
-  // eslint-disable-next-line no-useless-escape
-  `^(?=.*\d)(?=.*[a-z])(?=.*[a-zA-Z]).{4,120}$`
-);
+const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
 
 export const idSchema = Joi.string().uuid()
   .required();
@@ -18,7 +15,6 @@ export const userPostSchema = Joi.object({
 });
 
 export const userPutSchema = Joi.object({
-  id: idSchema,
   login: Joi.string(),
   password: Joi.string().pattern(passwordPattern),
   age: Joi.number().integer()
