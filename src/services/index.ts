@@ -1,1 +1,2 @@
 export * as userService from './userService';
+export * as groupService from './groupService';

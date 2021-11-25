@@ -58,10 +58,7 @@ export const findAllNotDeletedUsers = async (
 
 export const createUser = async (userData: IUser) => {
   try {
-    const result = await User.create(userData);
-
-    console.log(result);
-    return result;
+    return await User.create(userData);
   } catch (err) {
     throw new CustomError(`${ err }. Could not create user.`);
   }

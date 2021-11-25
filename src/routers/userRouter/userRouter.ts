@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
-import { utils } from './utils';
+import * as functions from './functions';
 
 const { getUserById, getAllUsers, deleteUserById, updateUser, createUser } =
-  utils;
+  functions;
 
 const router = Router();
 

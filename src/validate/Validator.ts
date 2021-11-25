@@ -18,21 +18,21 @@ export default class Validator implements IValidator {
 
   res: Response | null = null;
 
-  getMethod = (req: IncomingMessage) => {
-    return req?.method?.toLowerCase();
-  };
+  getMethod = (req: Request) => req.method.toLowerCase();
 
   validate = () => (req: Request, res: Response, next: NextFunction) => {
-    const method = this.getMethod(req);
+    if (req.path.includes('/users')) {
+      const method = this.getMethod(req);
 
-    this.req = req;
-    this.res = res;
+      this.req = req;
+      this.res = res;
 
-    if (method && method in this) {
-      this[<ValidatorMethods>method](next);
-      return;
+      if (method && method in this) {
+        this[<ValidatorMethods>method](next);
+        return;
+      }
     }
-    next();
+    return next();
   };
 
   get = (next: NextFunction): void => {

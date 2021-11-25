@@ -1,5 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { v4 } from 'uuid';
+import { Model } from 'sequelize';
+import { IUser } from '@app/types';
 
 export const DBUserModel = {
   id: {
@@ -32,3 +34,15 @@ export const DBUserModel = {
     defaultValue: false
   }
 };
+
+export class User extends Model<IUser> implements IUser {
+  readonly id!: string;
+
+  public login!: string;
+
+  public password!: string;
+
+  public age!: number;
+
+  readonly isDeleted!: boolean;
+}
