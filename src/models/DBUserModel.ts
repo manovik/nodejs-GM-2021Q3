@@ -1,6 +1,6 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import { v4 } from 'uuid';
-import { Model } from 'sequelize';
+
 import { IUser } from '@app/types';
 
 export const DBUserModel = {

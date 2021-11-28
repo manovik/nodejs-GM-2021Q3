@@ -1,5 +1,3 @@
-// import { Sequelize } from 'sequelize';
-
 import { Group } from '@app/data-access';
 import { CustomError } from '@app/errors';
 import { IGroup } from '@app/types';

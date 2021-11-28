@@ -47,7 +47,11 @@ export const getUserById = async (
   try {
     const user = await findUser(id);
 
-    res.status(RESPONSE_STATUS.OK).json(user);
+    if (user) {
+      res.status(RESPONSE_STATUS.OK).json(user);
+      return;
+    }
+    res.status(RESPONSE_STATUS.NOT_FOUND).json({});
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     res.status(RESPONSE_STATUS.BAD_REQUEST).json(`${ err?.message }`);
@@ -63,7 +67,7 @@ export const deleteUserById = async (
   try {
     const [result] = await updateInDB(id, { isDeleted: true });
 
-    if (result > 0) {
+    if (result) {
       res
         .status(RESPONSE_STATUS.DELETED)
         .json(`User with id ${ makeShortId(id) } was successfully deleted.`);
@@ -85,7 +89,7 @@ export const updateUser = async (
   try {
     const [result] = await updateInDB(id, { ...req.body });
 
-    if (result > 0) {
+    if (result) {
       res
         .status(RESPONSE_STATUS.UPDATED)
         .json(`User with id ${ makeShortId(id) } was successfully updated.`);

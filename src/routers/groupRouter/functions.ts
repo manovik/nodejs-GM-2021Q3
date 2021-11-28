@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
+import { v4 } from 'uuid';
 
 import { RESPONSE_STATUS } from '@app/constants';
 import { groupService } from '@app/services';
 import { CustomError } from '@app/errors';
 import { IGroup } from '@app/types';
-import { v4 } from 'uuid';
 import { makeShortId } from '@app/utils';
 
 const {
@@ -57,7 +57,7 @@ export const deleteGroupById = async (
   try {
     const result = await deleteGroup(id);
 
-    if (result > 0) {
+    if (result) {
       res
         .status(RESPONSE_STATUS.DELETED)
         .json(`Group with id ${ makeShortId(id) } was successfully deleted.`);
@@ -81,7 +81,7 @@ export const updateGroup = async (
   try {
     const [result] = await updateInDB(id, req.body);
 
-    if (result > 0) {
+    if (result) {
       res
         .status(RESPONSE_STATUS.UPDATED)
         .json(`Group with id ${ makeShortId(id) } was successfully updated.`);
