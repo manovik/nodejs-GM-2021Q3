@@ -1,8 +1,15 @@
 import { Sequelize } from 'sequelize';
 
-import { DBGroupModel, DBUserModel, Group, User } from '@app/models';
-import { sequelizeConfig as config } from './config';
+import {
+  DBGroupModel,
+  DBUserModel,
+  DBUserGroupModel,
+  Group,
+  User,
+  UserGroup
+} from '@app/models';
 
+import { sequelizeConfig as config } from './config';
 const sequelize = new Sequelize(
   config.dbName,
   config.dbUser,
@@ -10,22 +17,38 @@ const sequelize = new Sequelize(
   config.dbOpts
 );
 
-User.init(DBUserModel, {
-  sequelize,
-  modelName: 'user',
-  timestamps: false,
-  createdAt: false,
-  paranoid: false
-});
+try {
+  User.init(DBUserModel, {
+    sequelize,
+    modelName: 'user',
+    timestamps: false,
+    createdAt: false,
+    paranoid: false
+  });
 
-Group.init(DBGroupModel, {
-  sequelize,
-  modelName: 'group',
-  timestamps: false,
-  createdAt: false,
-  paranoid: false
-});
+  Group.init(DBGroupModel, {
+    sequelize,
+    modelName: 'group',
+    timestamps: false,
+    createdAt: false,
+    paranoid: false
+  });
 
-// sequelize.sync({ alter: true });
+  UserGroup.init(DBUserGroupModel, {
+    sequelize,
+    modelName: 'user_group',
+    timestamps: false,
+    createdAt: false,
+    paranoid: false
+  });
 
-export { sequelize, User, Group };
+  User.belongsToMany(Group, { through: UserGroup });
+
+  Group.belongsToMany(User, { through: UserGroup });
+
+  // sequelize.sync({ force: true });
+} catch (err) {
+  console.log(err);
+}
+
+export { sequelize, User, Group, UserGroup };

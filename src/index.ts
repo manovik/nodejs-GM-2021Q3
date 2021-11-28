@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { Validator } from './validate';
 import { userRouter, groupRouter } from './routers';
+import { userGroupRouter } from './routers/userGroupRouter';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use(validator.validate());
 app.use('/users', userRouter);
 app.use('/groups', groupRouter);
+app.use('/associate', userGroupRouter);
 
 try {
   app.listen(PORT);

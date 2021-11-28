@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { v4 } from 'uuid';
 import { Model } from 'sequelize';
+
 import { IGroup, Permission } from '@app/types';
 
 export const DBGroupModel = {
@@ -18,8 +19,11 @@ export const DBGroupModel = {
     unique: true
   },
   permissions: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false
+    type: DataTypes.ARRAY(
+      DataTypes.ENUM('READ', 'WRITE', 'DELETE', 'SHARE', 'UPLOAD_FILES')
+    ),
+    allowNull: false,
+    defaultValue: ['READ']
   }
 };
 

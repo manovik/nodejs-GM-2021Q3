@@ -1,1 +1,1 @@
-export { sequelize, User, Group } from './database_access';
+export { sequelize, User, Group, UserGroup } from './database_access';
