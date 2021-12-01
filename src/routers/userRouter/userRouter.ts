@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import * as functions from './functions';
+import * as functions from './controllers';
 
 const { getUserById, getAllUsers, deleteUserById, updateUser, createUser } =
   functions;
