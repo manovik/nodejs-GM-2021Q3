@@ -6,6 +6,7 @@ import { CustomError } from '@app/errors';
 import { makeShortId } from '@app/utils';
 import { IUser, IUserOutput } from '@app/types';
 import { mapUserOutput } from '@app/utils';
+import { v4 } from 'uuid';
 
 const {
   findUser,
@@ -111,7 +112,7 @@ export const createUser = async (
   try {
     const user: IUser = req.body;
 
-    const result = await createNewUser(user);
+    const result = await createNewUser({ ...user, id: v4() });
 
     res
       .status(RESPONSE_STATUS.CREATED)
