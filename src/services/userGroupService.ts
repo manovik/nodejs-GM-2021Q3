@@ -1,15 +1,15 @@
+import { sequelize } from '@app/data-access';
+
 import { CustomError } from '@app/errors';
 import { UserGroup } from '@app/data-access';
-import { makeShortId } from '@app/utils';
+import { IUserGroup } from '@app/types';
 
-export const addUsersToGroup = async (groupId: string, userId: string) => {
+export const addUsersToGroup = async (array: IUserGroup[]) => {
   try {
-    return await UserGroup.create({ userId, groupId });
-  } catch (err) {
-    throw new CustomError(
-      `${ err }. Could not associate user ${ makeShortId(
-        userId
-      ) } to group ${ makeShortId(groupId) }.`
+    await sequelize.transaction((transaction) =>
+      UserGroup.bulkCreate(array, { transaction })
     );
+  } catch (err) {
+    throw new CustomError(`${ err }. Failed to associate users with groups.`);
   }
 };
