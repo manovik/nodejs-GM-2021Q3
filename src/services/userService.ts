@@ -34,7 +34,7 @@ export const findUser = async (id: string): Promise<IUser | null> => {
 };
 
 export const findAllNotDeletedUsers = async (
-  limit = 10,
+  limit = 50,
   searchString = ''
 ): Promise<IUser[]> => {
   try {
@@ -47,7 +47,8 @@ export const findAllNotDeletedUsers = async (
           '%' + searchString + '%'
         )
       },
-      limit
+      limit,
+      order: [[ 'login', 'ASC' ]]
     });
 
     return users;
