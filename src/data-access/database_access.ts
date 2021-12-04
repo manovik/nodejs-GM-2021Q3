@@ -1,9 +1,15 @@
-import { Sequelize, Model } from 'sequelize';
+import { Sequelize } from 'sequelize';
 
-import { DBUserModel } from '@app/models/';
+import {
+  DBGroupModel,
+  DBUserModel,
+  DBUserGroupModel,
+  Group,
+  User,
+  UserGroup
+} from '@app/models';
+
 import { sequelizeConfig as config } from './config';
-import { IUser } from '@app/types';
-
 const sequelize = new Sequelize(
   config.dbName,
   config.dbUser,
@@ -11,26 +17,38 @@ const sequelize = new Sequelize(
   config.dbOpts
 );
 
-class User extends Model<IUser> implements IUser {
-  readonly id!: string;
+try {
+  User.init(DBUserModel, {
+    sequelize,
+    modelName: 'user',
+    timestamps: false,
+    createdAt: false,
+    paranoid: false
+  });
 
-  public login!: string;
+  Group.init(DBGroupModel, {
+    sequelize,
+    modelName: 'group',
+    timestamps: false,
+    createdAt: false,
+    paranoid: false
+  });
 
-  public password!: string;
+  UserGroup.init(DBUserGroupModel, {
+    sequelize,
+    modelName: 'user_group',
+    timestamps: false,
+    createdAt: false,
+    paranoid: false
+  });
 
-  public age!: number;
+  User.belongsToMany(Group, { through: UserGroup });
 
-  readonly isDeleted!: boolean;
+  Group.belongsToMany(User, { through: UserGroup });
+
+  // sequelize.sync({ force: true });
+} catch (err) {
+  console.log(err);
 }
 
-User.init(DBUserModel, {
-  sequelize,
-  modelName: 'user',
-  timestamps: false,
-  createdAt: false,
-  paranoid: false
-});
-
-// sequelize.sync({ alter: true });
-
-export { sequelize, User };
+export { sequelize, User, Group, UserGroup };

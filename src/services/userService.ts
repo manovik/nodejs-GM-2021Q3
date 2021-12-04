@@ -34,7 +34,7 @@ export const findUser = async (id: string): Promise<IUser | null> => {
 };
 
 export const findAllNotDeletedUsers = async (
-  limit = 10,
+  limit = 50,
   searchString = ''
 ): Promise<IUser[]> => {
   try {
@@ -47,7 +47,8 @@ export const findAllNotDeletedUsers = async (
           '%' + searchString + '%'
         )
       },
-      limit
+      limit,
+      order: [[ 'login', 'ASC' ]]
     });
 
     return users;
@@ -58,10 +59,7 @@ export const findAllNotDeletedUsers = async (
 
 export const createUser = async (userData: IUser) => {
   try {
-    const result = await User.create(userData);
-
-    console.log(result);
-    return result;
+    return await User.create(userData);
   } catch (err) {
     throw new CustomError(`${ err }. Could not create user.`);
   }
