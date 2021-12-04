@@ -1,0 +1,8 @@
+export enum RESPONSE_STATUS {
+  OK = 200,
+  CREATED = 201,
+  DELETED = 202,
+  UPDATED = 200,
+  BAD_REQUEST = 400,
+  SERVER_ERR = 500
+}
