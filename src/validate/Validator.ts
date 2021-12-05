@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import { IncomingMessage } from 'http';
 import { ValidationErrorHandler } from '../errors';
 import { idSchema, userPostSchema, userPutSchema } from './schemas';
 
 interface IValidator {
-  getMethod(req: IncomingMessage): string | undefined;
+  getMethod(req: Request): string;
   get(next: NextFunction): void;
   post(next: NextFunction): void;
   delete(next: NextFunction): void;
@@ -20,7 +19,7 @@ export default class Validator implements IValidator {
 
   getMethod = (req: Request) => req.method.toLowerCase();
 
-  validate = () => (req: Request, res: Response, next: NextFunction) => {
+  validate = (req: Request, res: Response, next: NextFunction) => {
     if (req.path.includes('/users')) {
       const method = this.getMethod(req);
 
