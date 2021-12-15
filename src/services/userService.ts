@@ -1,11 +1,16 @@
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
 
 import { User } from '@app/data-access';
 import { CustomError } from '@app/errors';
-import { IRequestInfo, IUser } from '@app/types';
+import { ICredentials, IRequestInfo, IUser } from '@app/types';
 import { infoLogger } from '@app/logger';
 import { getRequestContext } from '@app/logger/context';
 import { RESPONSE_STATUS } from '@app/constants';
+import { getToken, checkForCredentials } from '@app/auth';
+
+dotenv.config();
+const secret = process.env.SECRET;
 
 export const updateUser = async (
   id: string,
@@ -40,15 +45,26 @@ export const updateUser = async (
   }
 };
 
-export const findUser = async (id: string): Promise<IUser | null> => {
+export const findUserById = async (id: string): Promise<IUser | null> => {
   const { requestId, data } = <IRequestInfo>getRequestContext();
 
-  infoLogger.info({ requestId, name: 'findUser', id, data });
+  infoLogger.info({ requestId, name: 'findUserById', id, data });
+
+  return findUserByProp('id', id);
+};
+
+export const findUserByProp = async (
+  prop: 'login' | 'id' | 'age',
+  value: string
+): Promise<IUser | null> => {
+  const { requestId, data } = <IRequestInfo>getRequestContext();
+
+  infoLogger.info({ requestId, name: 'findUserByProp', prop, value, data });
 
   try {
     const user: IUser | null = await User.findOne({
       where: {
-        id,
+        [prop]: value,
         isDeleted: false
       }
     });
@@ -57,7 +73,13 @@ export const findUser = async (id: string): Promise<IUser | null> => {
   } catch (err) {
     const { requestId, data } = <IRequestInfo>getRequestContext();
 
-    infoLogger.error({ requestId, method: data.method, name: 'findUser', id });
+    infoLogger.error({
+      requestId,
+      method: data.method,
+      name: 'findUserByProp',
+      prop,
+      value
+    });
     throw new CustomError(
       `${ err }. Could not get user.`,
       RESPONSE_STATUS.NOT_FOUND
@@ -136,6 +158,47 @@ export const createUser = async (userData: IUser) => {
     throw new CustomError(
       `${ err }. Could not create user.`,
       RESPONSE_STATUS.BAD_REQUEST
+    );
+  }
+};
+
+export const logUserIn = async (credentials: ICredentials): Promise<string> => {
+  const { requestId, data } = <IRequestInfo>getRequestContext();
+
+  infoLogger.info({
+    requestId,
+    method: data.method,
+    name: 'logUserIn',
+    credentials
+  });
+  try {
+    if (checkForCredentials(credentials) && secret) {
+      const user: IUser | null = await findUserByProp(
+        'login',
+        credentials.login
+      );
+
+      if (user?.password === credentials.password) {
+        const token = await getToken(user);
+
+        return token;
+      } else {
+        throw 'Invalid login or password';
+      }
+    } else {
+      throw 'Login or password is missed';
+    }
+  } catch (err) {
+    infoLogger.error({
+      requestId,
+      method: data.method,
+      name: 'logUserIn',
+      credentials,
+      err
+    });
+    throw new CustomError(
+      `${ err }. Could not log in.`,
+      RESPONSE_STATUS.SERVER_ERR
     );
   }
 };

@@ -9,10 +9,11 @@ import { mapUserOutput } from '@app/utils';
 import { v4 } from 'uuid';
 
 const {
-  findUser,
+  findUserById,
   findAllNotDeletedUsers,
   updateUser: updateInDB,
-  createUser: createNewUser
+  createUser: createNewUser,
+  logUserIn
 } = userService;
 
 export const getAllUsers = async (
@@ -45,7 +46,7 @@ export const getUserById = async (
   const { id } = req.params;
 
   try {
-    const user = await findUser(id);
+    const user = await findUserById(id);
 
     if (user) {
       res.status(RESPONSE_STATUS.OK).json(user);
@@ -121,6 +122,21 @@ export const createUser = async (
           result.id
         ) }`
       );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await logUserIn(req.body);
+
+    res.status(RESPONSE_STATUS.OK).send(result);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     next(err);

@@ -1,27 +1,21 @@
-import express, { NextFunction, Request, Response } from 'express';
-import dotenv from 'dotenv';
+import express from 'express';
 import cors from 'cors';
 
-import { Validator } from './validate';
+import { validator } from './validate';
 import { userRouter, groupRouter } from './routers';
-import { userGroupRouter } from './routers/userGroupRouter';
+import { userGroupRouter } from './routers';
 import { infoLogger, useLogger } from './logger';
-import { getRequestContext } from './logger/context';
-import { IRequestInfo } from './types';
-import { CustomError } from './errors';
 import { errorHandler } from './errors/err';
-
-dotenv.config();
+import { useAuth } from './auth';
 
 const app = express();
 const PORT = Number(process.env?.PORT) || 3005;
-
-const validator = new Validator();
 
 app
   .use(cors())
   .use(express.json())
   .use(useLogger)
+  .use(useAuth)
   .use(validator.validate)
   .use('/users', userRouter)
   .use('/groups', groupRouter)

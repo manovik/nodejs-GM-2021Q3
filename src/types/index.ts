@@ -44,3 +44,8 @@ export interface IUserGroupRequest extends Omit<IUserGroup, 'userId'> {
 }
 
 export type IUserOutput = Omit<IUser, 'id' | 'isDeleted'>;
+
+export interface ICredentials {
+  login: string;
+  password: string;
+}
