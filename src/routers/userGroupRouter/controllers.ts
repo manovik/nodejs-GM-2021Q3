@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import { RESPONSE_STATUS } from '@app/constants';
 import { IUserGroup, IUserGroupRequest } from '@app/types';
@@ -9,7 +9,8 @@ const { addUsersToGroup: addNewUsersToGroup } = userGroupService;
 
 export const addUsersToGroup = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   const { userIds, groupId }: IUserGroupRequest = req.body;
   const usersWithGroups: IUserGroup[] = userIds.map((userId) => ({
@@ -26,6 +27,6 @@ export const addUsersToGroup = async (
       );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    res.status(RESPONSE_STATUS.BAD_REQUEST).send(err?.message);
+    next(err);
   }
 };

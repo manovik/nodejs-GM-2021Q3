@@ -1,8 +1,7 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import { v4 } from 'uuid';
-import { Model } from 'sequelize';
 
-import { IGroup, Permission } from '@app/types';
+import { IGroup, IPermission } from '@app/types';
 
 export const DBGroupModel = {
   id: {
@@ -32,5 +31,5 @@ export class Group extends Model<IGroup> implements IGroup {
 
   public name!: string;
 
-  public permissions!: Permission[];
+  public permissions!: IPermission[];
 }

@@ -1,10 +1,10 @@
+import { loginEndpoint } from '@app/constants';
 import { NextFunction, Request, Response } from 'express';
-import { IncomingMessage } from 'http';
 import { ValidationErrorHandler } from '../errors';
 import { idSchema, userPostSchema, userPutSchema } from './schemas';
 
 interface IValidator {
-  getMethod(req: IncomingMessage): string | undefined;
+  getMethod(req: Request): string;
   get(next: NextFunction): void;
   post(next: NextFunction): void;
   delete(next: NextFunction): void;
@@ -13,14 +13,14 @@ interface IValidator {
 
 type ValidatorMethods = 'get' | 'post' | 'delete' | 'put';
 
-export default class Validator implements IValidator {
+class Validator implements IValidator {
   req: Request | null = null;
 
   res: Response | null = null;
 
   getMethod = (req: Request) => req.method.toLowerCase();
 
-  validate = () => (req: Request, res: Response, next: NextFunction) => {
+  validate = (req: Request, res: Response, next: NextFunction) => {
     if (req.path.includes('/users')) {
       const method = this.getMethod(req);
 
@@ -40,6 +40,7 @@ export default class Validator implements IValidator {
   };
 
   post = (next: NextFunction): void => {
+    if (this.req?.url === loginEndpoint) return next();
     const { error } = userPostSchema.validate(this.req?.body);
 
     if (error) {
@@ -81,3 +82,5 @@ export default class Validator implements IValidator {
     next();
   };
 }
+
+export const validator = new Validator();

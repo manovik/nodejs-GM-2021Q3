@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { withLogger } from '@app/logger';
 import * as functions from './controllers';
 
 const {
@@ -12,11 +13,13 @@ const {
 
 const router = Router();
 
+const withGroupLogger = withLogger('group service');
+
 router
-  .get('/', getAllGroups)
-  .get('/:id', getGroupById)
-  .delete('/:id', deleteGroupById)
-  .put('/:id', updateGroup)
-  .post('/', createNewGroup);
+  .get('/', withGroupLogger(getAllGroups))
+  .get('/:id', withGroupLogger(getGroupById))
+  .delete('/:id', withGroupLogger(deleteGroupById))
+  .put('/:id', withGroupLogger(updateGroup))
+  .post('/', withGroupLogger(createNewGroup));
 
 export default router;
