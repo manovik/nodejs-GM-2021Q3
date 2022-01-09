@@ -3,11 +3,12 @@ import dotenv from 'dotenv';
 
 import { User } from '@app/data-access';
 import { CustomError } from '@app/errors';
-import { ICredentials, IRequestInfo, IUser } from '@app/types';
+import { ICredentials, IRequestInfo, IUser, IUserOutput } from '@app/types';
 import { infoLogger } from '@app/logger';
 import { getRequestContext } from '@app/logger/context';
 import { RESPONSE_STATUS } from '@app/constants';
 import { getToken, checkForCredentials } from '@app/auth';
+import { mapUserOutput } from '@app/utils';
 
 dotenv.config();
 const secret = process.env.SECRET;
@@ -45,12 +46,15 @@ export const updateUser = async (
   }
 };
 
-export const findUserById = async (id: string): Promise<IUser | null> => {
+export const findUserById = async (id: string): Promise<IUserOutput | null> => {
   const { requestId, data } = <IRequestInfo>getRequestContext();
 
   infoLogger.info({ requestId, name: 'findUserById', id, data });
 
-  return findUserByProp('id', id);
+  const user = await findUserByProp('id', id);
+  const [mappedUser] = user ? mapUserOutput([user]) : [null];
+
+  return mappedUser;
 };
 
 export const findUserByProp = async (
@@ -90,7 +94,7 @@ export const findUserByProp = async (
 export const findAllNotDeletedUsers = async (
   limit = 50,
   searchString = ''
-): Promise<IUser[]> => {
+): Promise<IUserOutput[]> => {
   const { requestId, data } = <IRequestInfo>getRequestContext();
 
   infoLogger.info({
@@ -115,7 +119,9 @@ export const findAllNotDeletedUsers = async (
       order: [[ 'login', 'ASC' ]]
     });
 
-    return users;
+    const mappedUsers: IUserOutput[] | undefined = mapUserOutput(users);
+
+    return mappedUsers;
   } catch (err) {
     const { requestId, data } = <IRequestInfo>getRequestContext();
 
