@@ -1,9 +1,8 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { v4 } from 'uuid';
 
 import { RESPONSE_STATUS } from '@app/constants';
 import { groupService } from '@app/services';
-import { CustomError } from '@app/errors';
 import { IGroup } from '@app/types';
 import { makeShortId } from '@app/utils';
 
@@ -17,7 +16,8 @@ const {
 
 export const getAllGroups = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const groups = await fetchGroups();
@@ -25,32 +25,35 @@ export const getAllGroups = async (
     res.status(RESPONSE_STATUS.OK).json(groups);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    res
-      .status(RESPONSE_STATUS.BAD_REQUEST)
-      .json(`Could not get list of groups.`);
-    throw new CustomError(err as string);
+    next(err);
   }
 };
 
 export const getGroupById = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   const { id } = req.params;
 
   try {
     const group = await findGroup(id);
 
-    res.status(RESPONSE_STATUS.OK).json(group);
+    if (group) {
+      res.status(RESPONSE_STATUS.OK).json(group);
+      return;
+    }
+    res.status(RESPONSE_STATUS.NOT_FOUND).json({});
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    res.status(RESPONSE_STATUS.BAD_REQUEST).json(`${ err?.message }`);
+    next(err);
   }
 };
 
 export const deleteGroupById = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -62,19 +65,20 @@ export const deleteGroupById = async (
         .status(RESPONSE_STATUS.DELETED)
         .json(`Group with id ${ makeShortId(id) } was successfully deleted.`);
     } else {
-      throw new CustomError(
-        `Could not find group with id "${ makeShortId(id) }"`
-      );
+      res
+        .status(RESPONSE_STATUS.NOT_FOUND)
+        .json(`Group with id ${ makeShortId(id) } was not found.`);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    res.status(RESPONSE_STATUS.BAD_REQUEST).json(err?.message);
+    next(err);
   }
 };
 
 export const updateGroup = async (
   req: Request<{ id: string }, null, IGroup>,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -86,21 +90,20 @@ export const updateGroup = async (
         .status(RESPONSE_STATUS.UPDATED)
         .json(`Group with id ${ makeShortId(id) } was successfully updated.`);
     } else {
-      throw new CustomError(
-        `Could not find group with id "${ makeShortId(id) }"`
-      );
+      res
+        .status(RESPONSE_STATUS.BAD_REQUEST)
+        .json(`Group with id ${ makeShortId(id) } was not updated.`);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    res
-      .status(RESPONSE_STATUS.BAD_REQUEST)
-      .json(`Group was not updated. Error message: ${ err?.message }`);
+    next(err);
   }
 };
 
 export const createNewGroup = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const group: IGroup = req.body;
@@ -116,6 +119,6 @@ export const createNewGroup = async (
       );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    res.status(RESPONSE_STATUS.BAD_REQUEST).json(err?.message);
+    next(err);
   }
 };
