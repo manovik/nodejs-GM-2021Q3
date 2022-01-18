@@ -4,15 +4,15 @@ import { RESPONSE_STATUS } from '@app/constants';
 import { userService } from '@app/services';
 import { CustomError } from '@app/errors';
 import { makeShortId } from '@app/utils';
-import { IUser, IUserOutput } from '@app/types';
-import { mapUserOutput } from '@app/utils';
+import { IUser } from '@app/types';
 import { v4 } from 'uuid';
 
 const {
-  findUser,
+  findUserById,
   findAllNotDeletedUsers,
   updateUser: updateInDB,
-  createUser: createNewUser
+  createUser: createNewUser,
+  logUserIn
 } = userService;
 
 export const getAllUsers = async (
@@ -28,9 +28,7 @@ export const getAllUsers = async (
       <string>loginSubstring
     );
 
-    const mappedUsers: IUserOutput[] | undefined = mapUserOutput(users);
-
-    res.status(RESPONSE_STATUS.OK).json(mappedUsers);
+    res.status(RESPONSE_STATUS.OK).json(users);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     next(err);
@@ -45,7 +43,7 @@ export const getUserById = async (
   const { id } = req.params;
 
   try {
-    const user = await findUser(id);
+    const user = await findUserById(id);
 
     if (user) {
       res.status(RESPONSE_STATUS.OK).json(user);
@@ -121,6 +119,21 @@ export const createUser = async (
           result.id
         ) }`
       );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await logUserIn(req.body);
+
+    res.status(RESPONSE_STATUS.OK).json(result);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     next(err);

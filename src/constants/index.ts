@@ -6,4 +6,8 @@ export enum RESPONSE_STATUS {
   BAD_REQUEST = 400,
   NOT_FOUND = 404,
   SERVER_ERR = 500,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
 }
+
+export const loginEndpoint = '/users/login';

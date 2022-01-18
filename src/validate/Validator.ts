@@ -1,3 +1,4 @@
+import { loginEndpoint } from '@app/constants';
 import { NextFunction, Request, Response } from 'express';
 import { ValidationErrorHandler } from '../errors';
 import { idSchema, userPostSchema, userPutSchema } from './schemas';
@@ -12,7 +13,7 @@ interface IValidator {
 
 type ValidatorMethods = 'get' | 'post' | 'delete' | 'put';
 
-export default class Validator implements IValidator {
+class Validator implements IValidator {
   req: Request | null = null;
 
   res: Response | null = null;
@@ -39,6 +40,7 @@ export default class Validator implements IValidator {
   };
 
   post = (next: NextFunction): void => {
+    if (this.req?.url === loginEndpoint) return next();
     const { error } = userPostSchema.validate(this.req?.body);
 
     if (error) {
@@ -80,3 +82,5 @@ export default class Validator implements IValidator {
     next();
   };
 }
+
+export const validator = new Validator();
