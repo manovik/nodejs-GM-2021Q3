@@ -4,8 +4,7 @@ import { RESPONSE_STATUS } from '@app/constants';
 import { userService } from '@app/services';
 import { CustomError } from '@app/errors';
 import { makeShortId } from '@app/utils';
-import { IUser, IUserOutput } from '@app/types';
-import { mapUserOutput } from '@app/utils';
+import { IUser } from '@app/types';
 import { v4 } from 'uuid';
 
 const {
@@ -29,9 +28,7 @@ export const getAllUsers = async (
       <string>loginSubstring
     );
 
-    const mappedUsers: IUserOutput[] | undefined = mapUserOutput(users);
-
-    res.status(RESPONSE_STATUS.OK).json(mappedUsers);
+    res.status(RESPONSE_STATUS.OK).json(users);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     next(err);
@@ -136,7 +133,7 @@ export const login = async (
   try {
     const result = await logUserIn(req.body);
 
-    res.status(RESPONSE_STATUS.OK).send(result);
+    res.status(RESPONSE_STATUS.OK).json(result);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     next(err);
